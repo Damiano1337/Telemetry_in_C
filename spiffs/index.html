@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hydrive Telemetry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .reading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .reading-box {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .label {
+            font-weight: bold;
+        }
+        .value {
+            font-size: 1.5em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hydrive Telemetry</h1>
+    <div class="reading-container">
+        <div class="reading-box">
+            <div class="label">Voltage 1:</div>
+            <div id="voltage1" class="value">-- V</div>
+        </div>
+        <div class="reading-box">
+            <div class="label">Voltage 2:</div>
+            <div id="voltage2" class="value">-- V</div>
+        </div>
+        <div class="reading-box">
+            <div class="label">Current 1:</div>
+            <div id="current1" class="value">-- A</div>
+        </div>
+        <div class="reading-box">
+            <div class="label">Current 2:</div>
+            <div id="current2" class="value">-- A</div>
+        </div>
+        <div class="reading-box">
+            <div class="label">Velocity:</div>
+            <div id="velocity" class="value">-- m/s</div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch("/api/data");
+                const data = await response.json();
+    
+                document.getElementById("voltage1").innerText = data.voltage1.toFixed(2) + " V";
+                document.getElementById("voltage2").innerText = data.voltage2.toFixed(2) + " V";
+                document.getElementById("current1").innerText = data.current1.toFixed(2) + " A";
+                document.getElementById("current2").innerText = data.current2.toFixed(2) + " A";
+                document.getElementById("velocity").innerText = data.velocity.toFixed(2) + " m/s";
+            } catch (err) {
+                console.error("Fetch error:", err);
+            }
+        }
+    
+        setInterval(fetchData, 500);
+    </script>
+    
+</body>
+</html>

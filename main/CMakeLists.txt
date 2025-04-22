@@ -1,0 +1,20 @@
+idf_component_register(
+    SRCS 
+        "main.c"
+        "wifi/access_point.c"
+        "mqtt/mqtt_com.c"
+        "sdcard/sd_logger.c"
+        "sensors/current_sensor.c"
+        "sensors/hall_sensor.c"
+        "sensors/sensors.c"
+        "sensors/voltage_sensor.c"
+    INCLUDE_DIRS 
+        "."
+        "wifi"
+        "mqtt"
+        "sdcard"
+        "sensors"
+    
+    EMBED_TXTFILES 
+        "certs/root_cert.pem"
+)
