@@ -13,9 +13,6 @@ static const char *TAG = "MAIN";
 
 static mesurements_t last_measurement;
 
-//static esp_mqtt_client_handle_t mqtt_client = NULL;
-
-// Task 1: Pomiar co 1ms
 void pomiar_task(void *pv)
 {
     while (1) {
@@ -32,7 +29,6 @@ void pomiar_task(void *pv)
     }
 }
 
-// Task 2: Zapis co 50ms
 void zapis_task(void *pv)
 {
     while (1) {
@@ -41,7 +37,6 @@ void zapis_task(void *pv)
     }
 }
 
-// Task 3: Publikacja MQTT co 100ms
 void mqtt_publish_task(void *pv)
 {
     while (mqtt_get_client() == NULL) {
@@ -69,7 +64,7 @@ void app_main(void)
     //wifi_init_softap();
     //mount_spiffs();
     //start_http_server();
-
+    
     nvs_flash_init();
     sensors_init();
 
