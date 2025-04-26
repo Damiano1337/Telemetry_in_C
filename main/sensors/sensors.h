@@ -4,8 +4,12 @@
 typedef struct {
     float voltage1;
     float voltage2;
+    float voltage3;
+    float voltage4;
     float current1;
     float current2;
+    float current3;
+    float current4;
     float velocity;
 } mesurements_t;
 

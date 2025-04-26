@@ -11,17 +11,21 @@
 
 static const char *TAG = "MAIN";
 
-static mesurements_t last_measurement;
+static mesurements_t mqtt_measurement;
+mesurements_t ap_measurement;
 
 void pomiar_task(void *pv)
 {
     while (1) {
         mesurements_t m = sensors_read_all();
-        last_measurement = m;
+
+        mqtt_measurement = m;
+        //ap_measurement = m;
 
         char *json = measurements_to_json(&m);
         if (json) {
             sd_logger_append(json);
+            printf("%s\n", json);
             free(json);
         }
 
@@ -43,11 +47,8 @@ void mqtt_publish_task(void *pv)
         ESP_LOGW(TAG, "MQTT client not ready, waiting...");
         vTaskDelay(pdMS_TO_TICKS(500));
     }
-
     while (1) {
-        mesurements_t m;
-            m = last_measurement;
-
+        mesurements_t m = mqtt_measurement;
         char *json = measurements_to_json(&m);
         if (json) {
             esp_mqtt_client_publish(mqtt_get_client(), mqtt_get_topic(), json, 0, 1, 0);
@@ -58,13 +59,9 @@ void mqtt_publish_task(void *pv)
     }
 }
 
+
 void app_main(void)
 {
-    
-    //wifi_init_softap();
-    //mount_spiffs();
-    //start_http_server();
-    
     nvs_flash_init();
     sensors_init();
 
@@ -72,9 +69,14 @@ void app_main(void)
         ESP_LOGE(TAG, "Nie udało się zainicjować karty SD");
     }
 
-    mqtt_app_start();
+    //wifi_init_apsta();
+    //mount_spiffs();
+    //start_http_server();
+
+    //mqtt_app_start();
 
     xTaskCreate(pomiar_task, "PomiarTask", 4096, NULL, 5, NULL);
     xTaskCreate(zapis_task, "ZapisTask", 4096, NULL, 4, NULL);
-    xTaskCreate(mqtt_publish_task, "MQTTPublishTask", 4096, NULL, 3, NULL);
+    //xTaskCreate(mqtt_publish_task, "MQTTPublishTask", 4096, NULL, 3, NULL);
+
 }

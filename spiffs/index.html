@@ -65,27 +65,22 @@
     </div>
 
     <script>
-        function getRandom(min, max) {
-            return Math.random() * (max - min) + min;
+        async function fetchDataFromESP() {
+            try {
+                const response = await fetch("/api/data");
+                const data = await response.json();
+    
+                document.getElementById("voltage1").innerText = parseFloat(data.voltage1).toFixed(2) + " V";
+                document.getElementById("voltage2").innerText = parseFloat(data.voltage2).toFixed(2) + " V";
+                document.getElementById("current1").innerText = parseFloat(data.current1).toFixed(2) + " A";
+                document.getElementById("current2").innerText = parseFloat(data.current2).toFixed(2) + " A";
+                document.getElementById("velocity").innerText = parseFloat(data.velocity).toFixed(2) + " m/s";
+            } catch (error) {
+                console.error("Błąd podczas pobierania danych:", error);
+            }
         }
-
-        function fetchDataSimulated() {
-            const data = {
-                voltage1: getRandom(3.0, 3.5),
-                voltage2: getRandom(4.5, 5.1),
-                current1: getRandom(0.5, 1.5),
-                current2: getRandom(0.3, 1.0),
-                velocity: getRandom(0.0, 10.0)
-            };
-
-            document.getElementById("voltage1").innerText = data.voltage1.toFixed(2) + " V";
-            document.getElementById("voltage2").innerText = data.voltage2.toFixed(2) + " V";
-            document.getElementById("current1").innerText = data.current1.toFixed(2) + " A";
-            document.getElementById("current2").innerText = data.current2.toFixed(2) + " A";
-            document.getElementById("velocity").innerText = data.velocity.toFixed(2) + " m/s";
-        }
-
-        setInterval(fetchDataSimulated, 500);
+    
+        setInterval(fetchDataFromESP, 500);
     </script>
 </body>
 </html>

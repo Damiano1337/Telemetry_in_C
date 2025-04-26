@@ -120,7 +120,7 @@ static void wifi_init_sta(void) {
 
     ESP_LOGI(TAG, "WiFi connecting to %s...", WIFI_SSID);
 }
-
+ 
 void mqtt_app_start(void) {
     nvs_flash_init();
     wifi_init_sta();

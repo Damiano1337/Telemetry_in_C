@@ -3,6 +3,6 @@
 
 void mount_spiffs(void);
 void start_http_server(void);
-void wifi_init_softap(void);
+void wifi_init_apsta(void);
 
 #endif // ACCESS_POINT_H

@@ -11,21 +11,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 #define WIFI_SSID "Hydrive_AP"
 #define WIFI_PASS "12345678"
 #define WIFI_CHANNEL 1
 #define MAX_CONN    4
 
 static const char *TAG = "access_point";
+extern mesurements_t ap_measurement;  // zadeklaruj globalną zmienną
 
 // Inicjalizacja WiFi w trybie AP
-void wifi_init_softap(void)
+void wifi_init_apsta(void)
 {
-    ESP_LOGI(TAG, "Initializing WiFi Access Point...");
+    ESP_LOGI(TAG, "Initializing WiFi in AP + STA mode...");
 
     esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
-    {
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
@@ -33,12 +34,14 @@ void wifi_init_softap(void)
 
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+
     esp_netif_create_default_wifi_ap();
+    esp_netif_create_default_wifi_sta();
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-    wifi_config_t wifi_config = {
+    wifi_config_t ap_config = {
         .ap = {
             .ssid = WIFI_SSID,
             .ssid_len = strlen(WIFI_SSID),
@@ -46,19 +49,30 @@ void wifi_init_softap(void)
             .password = WIFI_PASS,
             .max_connection = MAX_CONN,
             .authmode = WIFI_AUTH_WPA_WPA2_PSK
-        },
+        }
     };
 
     if (strlen(WIFI_PASS) == 0) {
-        wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+        ap_config.ap.authmode = WIFI_AUTH_OPEN;
     }
 
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
+    wifi_config_t sta_config = {
+        .sta = {
+            .ssid = "ESP32test",
+            .password = "maslo123",
+        }
+    };
+
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
     ESP_ERROR_CHECK(esp_wifi_start());
+    ESP_ERROR_CHECK(esp_wifi_connect());
 
     ESP_LOGI(TAG, "Access Point started: SSID:%s password:%s", WIFI_SSID, WIFI_PASS);
+    ESP_LOGI(TAG, "Connecting to STA: SSID:%s", sta_config.sta.ssid);
 }
+
 
 // Obsługa strony głównej
 static esp_err_t index_handler(httpd_req_t *req)
@@ -95,12 +109,15 @@ static esp_err_t index_handler(httpd_req_t *req)
 // Endpoint z danymi telemetrycznymi
 static esp_err_t api_data_handler(httpd_req_t *req)
 {
-    mesurements_t m = sensors_read_all();          // Odczytaj dane z czujników
-    char* json = measurements_to_json(&m);         // Zamień na JSON
+    char* json = measurements_to_json(&ap_measurement);  // użyj globalnych danych
 
-    httpd_resp_set_type(req, "application/json");
-    httpd_resp_send(req, json, strlen(json));
-    free(json);
+    if (json) {
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_send(req, json, strlen(json));
+        free(json);
+    } else {
+        httpd_resp_send_500(req);
+    }
 
     return ESP_OK;
 }
